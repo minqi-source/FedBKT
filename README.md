@@ -11,7 +11,9 @@ This repository contains the implementation of FedBKT, a novel federated learnin
 
 ## Framework Overview
 
-![FedBKT Framework](figures/frame.pdf)
+<div align="center">
+<img src="figures/frame.png" width="800px">
+</div>
 
 The framework consists of three main components:
 1. **Mediator Model**: A central model that facilitates knowledge exchange between clients
