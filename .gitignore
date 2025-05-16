@@ -33,7 +33,6 @@ env/
 
 # Data and Models
 data/
-models/
 *.pth
 *.pt
 *.ckpt
