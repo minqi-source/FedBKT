@@ -1,10 +1,10 @@
-# FedBKT: Federated Learning with Bidirectional Knowledge Transfer
+# FedBKT: Federated Learning with Model Heterogeneity via Bidirectional Knowledge Transfer with Mediator Model
 
 This repository contains the implementation of FedBKT, a novel federated learning framework that enables efficient knowledge transfer between heterogeneous models while preserving model personalization.
 
 ## Paper Information
 
-**Title**: FedBKT: Federated Learning with Bidirectional Knowledge Transfer
+**Title**: FedBKT: Federated Learning with Model Heterogeneity via Bidirectional Knowledge Transfer with Mediator Model
 
 
 **Conference**: ICIC 2025 (International Conference on Intelligent Computing)
