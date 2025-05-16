@@ -6,7 +6,6 @@ This repository contains the implementation of FedBKT, a novel federated learnin
 
 **Title**: FedBKT: Federated Learning with Bidirectional Knowledge Transfer
 
-**Authors**: Qi Min, Wei Chen, et al.
 
 **Conference**: ICIC 2025 (International Conference on Intelligent Computing)
 
