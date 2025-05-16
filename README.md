@@ -20,14 +20,6 @@ The framework consists of three main components:
 2. **Knowledge Sharing Module**: Transfers global knowledge from the mediator to local models
 3. **Knowledge Extraction Module**: Extracts local knowledge to update the global model
 
-## Key Features
-
-- Bidirectional knowledge transfer between clients and server
-- No reliance on public datasets
-- Hierarchical distillation strategy
-- Adaptive weight mechanism based on forgetting degree
-- Support for heterogeneous model architectures
-- Efficient handling of non-IID data distributions
 
 ## Requirements
 
