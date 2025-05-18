@@ -29,6 +29,8 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Basic Usage
+
 ```python
 from config.config import Config
 from train import FedBKT
@@ -41,14 +43,32 @@ fedbkt = FedBKT(config)
 fedbkt.train()
 ```
 
+### Custom Configuration
+
+You can customize the training process by modifying the configuration:
+
+```python
+from config.config import Config
+
+config = Config()
+config.num_clients = 10
+config.num_rounds = 100
+config.local_epochs = 5
+config.batch_size = 32
+config.learning_rate = 0.01
+
+fedbkt = FedBKT(config)
+fedbkt.train()
+```
+
 ## Citation
 
 If you find this work useful for your research, please cite our paper:
 
 ```bibtex
 @inproceedings{fedbkt2025,
-  title={FedBKT: Federated Learning with Bidirectional Knowledge Transfer},
-  author={Min, Qi and Chen, Wei and others},
+  title={FedBKT: Federated Learning with Model Heterogeneity via Bidirectional Knowledge Transfer with Mediator Model},
+  author={Min, Qi and Wang, Hui and Jia, Peng and Qiu, Yuan and Gu, Chunhua and Ding, Weichao},
   booktitle={International Conference on Intelligent Computing (ICIC)},
   year={2025}
 }
@@ -60,4 +80,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-We thank all the contributors and reviewers for their valuable feedback and suggestions. 
+We thank ...
