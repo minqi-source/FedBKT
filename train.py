@@ -8,7 +8,10 @@ import os
 import logging
 from datetime import datetime
 
-from models.cnn import CNNModel
+from models.models import (
+    MediatorModel, ClientModel1, ClientModel2, ClientModel3,
+    ClientModel4, ClientModel5, ClientModel6, ClientModel7, ClientModel8
+)
 from config.default_config import DefaultConfig
 from utils.data_utils import get_dataset, split_data, get_dataloader
 from utils.train_utils import (
@@ -78,14 +81,20 @@ class FedBKT:
         
     def _setup_models(self):
         """Initialize client models and mediator model."""
-        # Initialize client models
-        self.client_models = [
-            CNNModel(self.config).to(self.device)
-            for _ in range(self.config.num_clients)
+        # Initialize client models with different architectures
+        model_classes = [
+            ClientModel1, ClientModel2, ClientModel3, ClientModel4,
+            ClientModel5, ClientModel6, ClientModel7, ClientModel8
         ]
         
+        # Assign models to clients in a round-robin fashion
+        self.client_models = []
+        for i in range(self.config.num_clients):
+            model_class = model_classes[i % len(model_classes)]
+            self.client_models.append(model_class(self.config.num_classes).to(self.device))
+        
         # Initialize mediator model
-        self.mediator_model = CNNModel(self.config).to(self.device)
+        self.mediator_model = MediatorModel(self.config.num_classes).to(self.device)
         
         # Initialize optimizers
         self.client_optimizers = [
@@ -144,7 +153,7 @@ class FedBKT:
             zip(self.client_models, self.client_optimizers, self.client_dataloaders)
         ):
             # Store old model state for forgetting degree computation
-            old_model = CNNModel(self.config).to(self.device)
+            old_model = ClientModel1(self.config.num_classes).to(self.device)
             old_model.load_state_dict(model.state_dict())
             
             # Local training
@@ -202,24 +211,46 @@ class FedBKT:
         """
         self.mediator_model.train()
         total_loss = 0
+        total_l1_loss = 0
+        total_l2_loss = 0
+        total_l3_loss = 0
         
         for client_idx, knowledge in enumerate(extracted_knowledge):
             self.mediator_optimizer.zero_grad()
             
+            # Get forgetting degree for adaptive weight
+            forgetting_degree = compute_forgetting_degree(
+                self.client_models[client_idx],
+                self.mediator_model,
+                self.client_dataloaders[client_idx],
+                self.device
+            )
+            
             # Compute knowledge distillation loss
-            kd_loss = knowledge_distillation(
+            losses = knowledge_distillation(
                 self.mediator_model,
                 self.client_models[client_idx],
                 knowledge['features'],
-                self.config.knowledge_temp
+                knowledge['logits'],
+                self.config.knowledge_temp,
+                forgetting_degree
             )
             
             # Update mediator model
-            kd_loss.backward()
+            losses['total_loss'].backward()
             self.mediator_optimizer.step()
-            total_loss += kd_loss.item()
             
-        return {'loss': total_loss / len(extracted_knowledge)}
+            total_loss += losses['total_loss'].item()
+            total_l1_loss += losses['l1_loss'].item()
+            total_l2_loss += losses['l2_loss'].item()
+            total_l3_loss += losses['l3_loss'].item()
+            
+        return {
+            'loss': total_loss / len(extracted_knowledge),
+            'l1_loss': total_l1_loss / len(extracted_knowledge),
+            'l2_loss': total_l2_loss / len(extracted_knowledge),
+            'l3_loss': total_l3_loss / len(extracted_knowledge)
+        }
         
     def _knowledge_sharing(self):
         """Share knowledge from mediator to clients."""
@@ -233,24 +264,27 @@ class FedBKT:
             for inputs, targets in dataloader:
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
                 
-                # Compute task loss
-                outputs = model(inputs)
-                task_loss = model.compute_loss(outputs, targets)
+                # Get forgetting degree for adaptive weight
+                forgetting_degree = compute_forgetting_degree(
+                    model,
+                    self.mediator_model,
+                    dataloader,
+                    self.device
+                )
                 
                 # Compute knowledge distillation loss
-                kd_loss = knowledge_distillation(
+                losses = knowledge_distillation(
                     model,
                     self.mediator_model,
                     inputs,
-                    self.config.knowledge_temp
+                    targets,
+                    self.config.knowledge_temp,
+                    forgetting_degree
                 )
-                
-                # Combined loss
-                loss = task_loss + self.config.distillation_weight * kd_loss
                 
                 # Update client model
                 self.client_optimizers[client_idx].zero_grad()
-                loss.backward()
+                losses['total_loss'].backward()
                 self.client_optimizers[client_idx].step()
                 
     def _log_metrics(self, round_idx: int,
